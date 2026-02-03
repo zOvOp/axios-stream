@@ -142,3 +142,7 @@ myAxios.stream({ url: "/chat" }, (chunk) => {
 ## License
 
 MIT
+
+## Acknowledgement
+
+This project is based on [Axios](https://github.com/axios/axios).
