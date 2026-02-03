@@ -1,4 +1,4 @@
-# axios-stream
+# stream-axios
 
 [English](./README.md) | [简体中文](./README.zh-CN.md)
 
@@ -14,7 +14,7 @@
 ## 安装
 
 ```bash
-npm install axios-stream
+npm install stream-axios
 ```
 
 ## 使用指南
@@ -22,7 +22,7 @@ npm install axios-stream
 ### 1. 基础请求 (同 axios)
 
 ```javascript
-import request from 'axios-stream';
+import request from 'stream-axios';
 
 // GET 请求
 request.get('/user?ID=12345')
@@ -51,7 +51,7 @@ request.post('/user', {
 适用于接收大文件或 AI 对话流等场景。
 
 ```javascript
-import request from 'axios-stream';
+import request from 'stream-axios';
 
 const cancel = request.stream(
   {
@@ -82,7 +82,7 @@ const cancel = request.stream(
 如果你需要独立的配置或拦截器：
 
 ```javascript
-import { createInstance } from 'axios-stream';
+import { createInstance } from 'stream-axios';
 
 const myRequest = createInstance({
   baseURL: 'https://api.mydomain.com',
@@ -104,7 +104,7 @@ myRequest.stream({ url: '/stream' }, (chunk) => console.log(chunk));
 如果你处理的是 SSE (Server-Sent Events) 格式的数据：
 
 ```javascript
-import request, { parseSSEChunk } from 'axios-stream';
+import request, { parseSSEChunk } from 'stream-axios';
 
 request.stream(
   { url: '/sse-endpoint', method: 'GET' },
@@ -123,7 +123,7 @@ request.stream(
 
 ```javascript
 import axios from 'axios';
-import { attachStream } from 'axios-stream';
+import { attachStream } from 'stream-axios';
 
 // 你现有的 axios 实例
 const myAxios = axios.create({

@@ -1,4 +1,4 @@
-# axios-stream
+# stream-axios
 
 [English](./README.md) | [简体中文](./README.zh-CN.md)
 
@@ -14,7 +14,7 @@ A wrapper library based on axios that retains the original configuration capabil
 ## Installation
 
 ```bash
-npm install axios-stream
+npm install stream-axios
 ```
 
 ## Usage Guide
@@ -22,7 +22,7 @@ npm install axios-stream
 ### 1. Basic Request (Same as axios)
 
 ```javascript
-import request from "axios-stream";
+import request from "stream-axios";
 
 // GET request
 request
@@ -53,7 +53,7 @@ request
 Suitable for scenarios like receiving large files or AI conversation streams.
 
 ```javascript
-import request from "axios-stream";
+import request from "stream-axios";
 
 const cancel = request.stream(
   {
@@ -84,7 +84,7 @@ const cancel = request.stream(
 If you need independent configuration or interceptors:
 
 ```javascript
-import { createInstance } from "axios-stream";
+import { createInstance } from "stream-axios";
 
 const myRequest = createInstance({
   baseURL: "https://api.mydomain.com",
@@ -106,7 +106,7 @@ myRequest.stream({ url: "/stream" }, (chunk) => console.log(chunk));
 If you are handling SSE (Server-Sent Events) format data:
 
 ```javascript
-import request, { parseSSEChunk } from "axios-stream";
+import request, { parseSSEChunk } from "stream-axios";
 
 request.stream({ url: "/sse-endpoint", method: "GET" }, (chunk) => {
   // Parse SSE data
@@ -122,7 +122,7 @@ If you already have a configured axios instance in your project, you can attach 
 
 ```javascript
 import axios from "axios";
-import { attachStream } from "axios-stream";
+import { attachStream } from "stream-axios";
 
 // Your existing axios instance
 const myAxios = axios.create({
