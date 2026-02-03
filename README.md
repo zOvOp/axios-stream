@@ -55,7 +55,7 @@ Suitable for scenarios like receiving large files or AI conversation streams.
 ```javascript
 import request from "stream-axios";
 
-const cancel = request.stream(
+const cancel = await request.stream(
   {
     url: "/api/chat",
     method: "POST",

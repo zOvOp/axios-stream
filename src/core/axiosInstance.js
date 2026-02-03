@@ -1,6 +1,5 @@
 import axios from "axios";
 import { defaultConfig } from "../config/defaultConfig.js";
-import { setupInterceptors } from "../interceptors/index.js";
 import { createStreamRequest } from "./stream.js";
 
 /**
@@ -11,9 +10,6 @@ import { createStreamRequest } from "./stream.js";
 export const createInstance = (config = {}) => {
   const finalConfig = { ...defaultConfig, ...config };
   const instance = axios.create(finalConfig);
-
-  // Setup interceptors
-  setupInterceptors(instance);
 
   // Attach stream method
   instance.stream = createStreamRequest(instance);

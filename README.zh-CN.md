@@ -22,10 +22,11 @@ npm install stream-axios
 ### 1. 基础请求 (同 axios)
 
 ```javascript
-import request from 'stream-axios';
+import request from "stream-axios";
 
 // GET 请求
-request.get('/user?ID=12345')
+request
+  .get("/user?ID=12345")
   .then(function (response) {
     console.log(response);
   })
@@ -34,9 +35,10 @@ request.get('/user?ID=12345')
   });
 
 // POST 请求
-request.post('/user', {
-    firstName: 'Fred',
-    lastName: 'Flintstone'
+request
+  .post("/user", {
+    firstName: "Fred",
+    lastName: "Flintstone",
   })
   .then(function (response) {
     console.log(response);
@@ -51,26 +53,26 @@ request.post('/user', {
 适用于接收大文件或 AI 对话流等场景。
 
 ```javascript
-import request from 'stream-axios';
+import request from "stream-axios";
 
-const cancel = request.stream(
+const cancel = await request.stream(
   {
-    url: '/api/chat',
-    method: 'POST',
-    data: { message: 'Hello' }
+    url: "/api/chat",
+    method: "POST",
+    data: { message: "Hello" },
   },
   (chunk) => {
     // 收到数据片段
-    console.log('Received chunk:', chunk);
+    console.log("Received chunk:", chunk);
   },
   () => {
     // 请求完成
-    console.log('Stream completed');
+    console.log("Stream completed");
   },
   (error) => {
     // 发生错误
-    console.error('Stream error:', error);
-  }
+    console.error("Stream error:", error);
+  },
 );
 
 // 如果需要取消请求
@@ -82,21 +84,21 @@ const cancel = request.stream(
 如果你需要独立的配置或拦截器：
 
 ```javascript
-import { createInstance } from 'stream-axios';
+import { createInstance } from "stream-axios";
 
 const myRequest = createInstance({
-  baseURL: 'https://api.mydomain.com',
-  timeout: 5000
+  baseURL: "https://api.mydomain.com",
+  timeout: 5000,
 });
 
 // 添加自定义拦截器
-myRequest.interceptors.request.use(config => {
-  config.headers['Authorization'] = 'Bearer token';
+myRequest.interceptors.request.use((config) => {
+  config.headers["Authorization"] = "Bearer token";
   return config;
 });
 
 // 使用流式方法
-myRequest.stream({ url: '/stream' }, (chunk) => console.log(chunk));
+myRequest.stream({ url: "/stream" }, (chunk) => console.log(chunk));
 ```
 
 ### 4. SSE 解析助手
@@ -104,17 +106,14 @@ myRequest.stream({ url: '/stream' }, (chunk) => console.log(chunk));
 如果你处理的是 SSE (Server-Sent Events) 格式的数据：
 
 ```javascript
-import request, { parseSSEChunk } from 'stream-axios';
+import request, { parseSSEChunk } from "stream-axios";
 
-request.stream(
-  { url: '/sse-endpoint', method: 'GET' },
-  (chunk) => {
-    // 解析 SSE 数据
-    parseSSEChunk(chunk, (content) => {
-      console.log('SSE Message:', content);
-    });
-  }
-);
+request.stream({ url: "/sse-endpoint", method: "GET" }, (chunk) => {
+  // 解析 SSE 数据
+  parseSSEChunk(chunk, (content) => {
+    console.log("SSE Message:", content);
+  });
+});
 ```
 
 ### 5. 使用现有的 Axios 实例
@@ -122,20 +121,20 @@ request.stream(
 如果你项目中已经有了配置好的 axios 实例，你可以将 stream 方法挂载到该实例上：
 
 ```javascript
-import axios from 'axios';
-import { attachStream } from 'stream-axios';
+import axios from "axios";
+import { attachStream } from "stream-axios";
 
 // 你现有的 axios 实例
 const myAxios = axios.create({
-  baseURL: 'https://api.myproject.com',
-  headers: { 'X-Custom-Header': 'foobar' }
+  baseURL: "https://api.myproject.com",
+  headers: { "X-Custom-Header": "foobar" },
 });
 
 // 挂载 stream 方法
 attachStream(myAxios);
 
 // 现在你可以在实例上使用 .stream() 方法了
-myAxios.stream({ url: '/chat' }, (chunk) => {
+myAxios.stream({ url: "/chat" }, (chunk) => {
   console.log(chunk);
 });
 ```
