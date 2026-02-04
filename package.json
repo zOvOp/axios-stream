@@ -1,6 +1,6 @@
 {
   "name": "stream-axios",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "二次封装 axios，保留原始配置，提供流式接口，提升开发效率",
   "type": "module",
   "main": "dist/index.cjs",

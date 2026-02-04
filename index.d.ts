@@ -49,3 +49,18 @@ export function attachStream(instance: AxiosInstance): AxiosStreamInstance;
  * @param onMessage Callback for each data message
  */
 export function parseSSEChunk(chunk: string, onMessage: (content: string) => void): void;
+
+export interface SSEEvent {
+    event?: string;
+    data?: string;
+    id?: string;
+    retry?: number;
+}
+
+/**
+ * Creates a stateful SSE parser with buffer for handling chunks that may be split.
+ * @param onMessage Callback receiving parsed SSE event object
+ * @returns Parser function that accepts raw chunk string
+ */
+export function createSSEParser(onMessage: (event: SSEEvent) => void): (chunk: string) => void;
+

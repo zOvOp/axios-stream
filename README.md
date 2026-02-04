@@ -52,7 +52,7 @@ request
 
 ### 2. Streaming Request
 
-Suitable for scenarios like receiving large files or AI conversation streams.
+Suitable for scenarios like receiving large files or AI conversation streams. The `stream` method returns a **cancel function** that you can call to abort the request.
 
 ```javascript
 import { createInstance } from "stream-axios";
@@ -79,13 +79,26 @@ const cancel = await request.stream(
   },
 );
 
-// If you need to cancel the request
-// cancel();
+// Cancel the stream manually when needed
+cancel();
+```
+
+**Optional: use `AbortSignal`** to cancel from outside (e.g. React cleanup):
+
+```javascript
+const controller = new AbortController();
+await request.stream(
+  { url: "/api/chat", signal: controller.signal },
+  onChunk,
+  onComplete,
+  onError,
+);
+// controller.abort(); // cancels the request
 ```
 
 ### 3. Custom Instance
 
-If you need independent configuration or interceptors:
+`createInstance` merges your config with the default (timeout 15s, `Content-Type: application/json;charset=utf-8`). Override as needed:
 
 ```javascript
 import { createInstance } from "stream-axios";
@@ -100,102 +113,59 @@ myRequest.interceptors.request.use((config) => {
   config.headers["Authorization"] = "Bearer token";
   return config;
 });
-
-// Use stream method
-myRequest.stream({ url: "/stream" }, (chunk) => console.log(chunk));
 ```
 
-### 4. SSE Parsing Helper
+### 4. Attach Stream to Existing Axios Instance
 
-If you are handling SSE (Server-Sent Events) format data:
+If you already have an axios instance, use `attachStream` to add the `stream` method without creating a new instance:
 
 ```javascript
-import { createInstance, parseSSEChunk } from "stream-axios";
+import axios from "axios";
+import { attachStream } from "stream-axios";
 
-const request = createInstance();
+const instance = axios.create({ baseURL: "https://api.example.com" });
+attachStream(instance);
 
-// Simple usage - parse data field only
-request.stream({ url: "/sse-endpoint", method: "GET" }, (chunk) => {
-  parseSSEChunk(chunk, (content) => {
-    console.log("SSE Message:", content);
-  });
-});
+// instance.stream() is now available
+const cancel = await instance.stream({ url: "/api/stream" }, onChunk, onComplete, onError);
 ```
 
-For production environments, use `createSSEParser` which handles chunks that may be split across multiple packets:
+### 5. Helper Functions
+
+#### `createSSEParser` (stateful, handles split chunks)
+
+Use for robust SSE parsing when chunks may be split across reads. Callback receives the full event object:
 
 ```javascript
 import { createInstance, createSSEParser } from "stream-axios";
 
 const request = createInstance();
 
-// Create a stateful parser with buffer
 const parser = createSSEParser((event) => {
-  // event object contains: { event?, data?, id?, retry? }
-  console.log("Event type:", event.event);
-  console.log("Data:", event.data);
-  console.log("ID:", event.id);
+  // event: { event?: string, data?: string, id?: string, retry?: number }
+  if (event.data) {
+    console.log("SSE Data:", event.data);
+  }
 });
 
-request.stream(
-  { url: "/sse-endpoint", method: "GET" },
-  parser,
-  () => console.log("Completed"),
-  (error) => console.error("Error:", error),
+await request.stream(
+  { url: "/api/sse-stream" },
+  (chunk) => parser(chunk),
 );
 ```
 
-### 5. Cancel with External AbortSignal
+#### `parseSSEChunk` (stateless, full chunks only)
 
-You can pass an external `AbortSignal` to control the stream request:
-
-```javascript
-import { createInstance } from "stream-axios";
-
-const request = createInstance();
-const controller = new AbortController();
-
-request.stream(
-  {
-    url: "/api/chat",
-    method: "POST",
-    data: { message: "Hello" },
-    signal: controller.signal, // Pass external signal
-  },
-  (chunk) => console.log(chunk),
-  () => console.log("Completed"),
-  (error) => console.error(error),
-);
-
-// Cancel from external controller
-setTimeout(() => {
-  controller.abort();
-}, 5000);
-```
-
-### 6. Use with Existing Axios Instance
-
-If you already have a configured axios instance in your project, you can attach the stream method to it:
+Use when you have a complete SSE text chunk and only need the data content. Callback receives each message's data string:
 
 ```javascript
-import axios from "axios";
-import { attachStream } from "stream-axios";
+import { parseSSEChunk } from "stream-axios";
 
-// Your existing axios instance
-const myAxios = axios.create({
-  baseURL: "https://api.myproject.com",
-  headers: { "X-Custom-Header": "foobar" },
-});
-
-// Attach stream method
-attachStream(myAxios);
-
-// Now you can use .stream() on your instance
-myAxios.stream({ url: "/chat" }, (chunk) => {
-  console.log(chunk);
+const sseText = "data: hello\n\ndata: world\n\n";
+parseSSEChunk(sseText, (data) => {
+  console.log("Message:", data); // "hello", then "world"
 });
 ```
-
 ## License
 
 MIT
