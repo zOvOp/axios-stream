@@ -87,6 +87,9 @@ cancel();
 **Optional: use `AbortSignal`** to cancel from outside (e.g. React cleanup):
 
 ```javascript
+import { createInstance } from "stream-axios";
+
+const request = createInstance();
 const controller = new AbortController();
 await request.stream(
   { url: "/api/chat", signal: controller.signal },
@@ -102,6 +105,9 @@ await request.stream(
 You can configure automatic retries for failed requests (e.g. network errors):
 
 ```javascript
+import { createInstance } from "stream-axios";
+
+const request = createInstance();
 await request.stream(
   {
     url: "/api/chat",

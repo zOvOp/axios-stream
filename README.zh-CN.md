@@ -87,6 +87,9 @@ cancel();
 **可选：使用 `AbortSignal`** 从外部取消（例如 React 清理时）：
 
 ```javascript
+import { createInstance } from "stream-axios";
+
+const request = createInstance();
 const controller = new AbortController();
 await request.stream(
   { url: "/api/chat", signal: controller.signal },
@@ -102,6 +105,9 @@ await request.stream(
 支持配置失败自动重试（例如应对网络波动）：
 
 ```javascript
+import { createInstance } from "stream-axios";
+
+const request = createInstance();
 await request.stream(
   {
     url: "/api/chat",
