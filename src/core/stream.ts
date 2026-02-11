@@ -1,12 +1,16 @@
-/**
- * Parse a single SSE event block
- * @param {string} eventBlock - A single SSE event (lines separated by \n)
- * @returns {{ event?: string, data?: string, id?: string, retry?: number } | null}
- */
-function parseSSEEvent(eventBlock) {
+import { AxiosInstance, AxiosRequestConfig } from "axios";
+
+export interface SSEEvent {
+  event?: string;
+  data?: string;
+  id?: string;
+  retry?: number;
+}
+
+function parseSSEEvent(eventBlock: string): SSEEvent | null {
   const lines = eventBlock.split("\n");
-  const result = {};
-  const dataLines = [];
+  const result: SSEEvent = {};
+  const dataLines: string[] = [];
 
   for (const line of lines) {
     if (line.startsWith("data:")) {
@@ -37,7 +41,7 @@ function parseSSEEvent(eventBlock) {
  * @param {string} sseText - Raw SSE text chunk
  * @param {Function} onMessage - Callback receiving data content string
  */
-export function parseSSEChunk(sseText, onMessage) {
+export function parseSSEChunk(sseText: string, onMessage: (data: string) => void): void {
   const events = sseText.split("\n\n").filter(Boolean);
   for (const eventBlock of events) {
     const parsed = parseSSEEvent(eventBlock);
@@ -52,10 +56,10 @@ export function parseSSEChunk(sseText, onMessage) {
  * @param {Function} onMessage - Callback receiving parsed SSE event object { event?, data?, id?, retry? }
  * @returns {Function} Parser function that accepts raw chunk string
  */
-export function createSSEParser(onMessage) {
+export function createSSEParser(onMessage: (event: SSEEvent) => void): (chunk: string) => void {
   let buffer = "";
 
-  return (chunk) => {
+  return (chunk: string) => {
     buffer += chunk;
     // Split by double newline (SSE event separator)
     const parts = buffer.split("\n\n");
@@ -72,15 +76,30 @@ export function createSSEParser(onMessage) {
   };
 }
 
+export interface StreamOptions extends AxiosRequestConfig {
+  retry?: number;
+  retryDelay?: number;
+}
+
+export type CancelFunction = () => void;
+export type OnChunk = (chunk: string) => void;
+export type OnComplete = () => void;
+export type OnError = (error: any) => void;
+
 /**
  * Create a stream request function bound to an axios instance
  * @param {import('axios').AxiosInstance} instance
  */
-export const createStreamRequest = (instance) => {
-  return async (options = {}, onChunk, onComplete, onError) => {
+export const createStreamRequest = (instance: AxiosInstance) => {
+  return async (
+    options: StreamOptions = {},
+    onChunk?: OnChunk,
+    onComplete?: OnComplete,
+    onError?: OnError
+  ): Promise<CancelFunction> => {
     const controller = new AbortController();
-    let reader = null;
-    let externalSignalHandler = null;
+    let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
+    let externalSignalHandler: (() => void) | null = null;
 
     // Handle external signal
     if (options.signal) {
@@ -88,13 +107,13 @@ export const createStreamRequest = (instance) => {
         controller.abort();
       } else {
         externalSignalHandler = () => controller.abort();
-        options.signal.addEventListener("abort", externalSignalHandler);
+        (options.signal as AbortSignal).addEventListener("abort", externalSignalHandler);
       }
     }
 
     const cleanup = () => {
       if (options.signal && externalSignalHandler) {
-        options.signal.removeEventListener("abort", externalSignalHandler);
+        (options.signal as AbortSignal).removeEventListener("abort", externalSignalHandler);
         externalSignalHandler = null;
       }
     };
@@ -120,15 +139,16 @@ export const createStreamRequest = (instance) => {
       try {
         if (controller.signal.aborted) return;
 
-        const response = await instance({
+        const response: any = await instance({
           ...options,
+          // @ts-ignore
           isStream: true,
           // Force critical config for streaming
           adapter: "fetch",
           responseType: "stream",
           timeout: 0,
           signal: controller.signal,
-        });
+        } as AxiosRequestConfig);
 
         // Handle both standard axios response and unwrapped response (by user interceptors)
         // If user's interceptor returned response.data, 'response' itself might be the stream
@@ -148,6 +168,7 @@ export const createStreamRequest = (instance) => {
 
         const readStreamChunk = async () => {
           try {
+            if (!reader) return;
             const { done, value } = await reader.read();
             if (done) {
               cleanup();
@@ -158,7 +179,7 @@ export const createStreamRequest = (instance) => {
 
             if (onChunk) onChunk(chunk);
             await readStreamChunk();
-          } catch (err) {
+          } catch (err: any) {
             cleanup();
             if (err.name === "AbortError") return;
             if (onError) onError(`Read stream failed: ${err.message}`);
@@ -166,7 +187,7 @@ export const createStreamRequest = (instance) => {
         };
 
         readStreamChunk();
-      } catch (err) {
+      } catch (err: any) {
         if (
           err.name === "CanceledError" ||
           err.code === "ERR_CANCELED" ||

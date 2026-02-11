@@ -11,11 +11,12 @@ A wrapper library based on axios that retains the original configuration capabil
 - 🛠 **Out of the Box**: Provides a default instance and supports creating custom instances.
 - 📦 **SSE Helper**: Built-in SSE parsing tool for easy handling of Server-Sent Events.
 - 🔄 **Auto Retry**: Support automatic retry on failure to improve robustness.
+- 🛡 **Type Safe**: Written in TypeScript, providing complete and accurate type definitions.
 
 ## Installation
 
 ```bash
-npm install stream-axios
+npm install stream-axios axios
 ```
 
 ## Usage Guide

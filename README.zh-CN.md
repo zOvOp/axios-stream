@@ -11,11 +11,12 @@
 - 🛠 **开箱即用**：提供默认实例，也支持创建自定义实例。
 - 📦 **SSE 助手**：内置 SSE 解析工具，方便处理 Server-Sent Events。
 - 🔄 **自动重试**：支持请求失败自动重试，提升稳定性。
+- 🛡 **类型安全**：使用 TypeScript 编写，提供完整且准确的类型定义。
 
 ## 安装
 
 ```bash
-npm install stream-axios
+npm install stream-axios axios
 ```
 
 ## 使用指南
